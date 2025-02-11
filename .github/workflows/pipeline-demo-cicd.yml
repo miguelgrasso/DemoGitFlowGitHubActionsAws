@@ -29,4 +29,22 @@
   
         - name: Build project
           run: npm run build 
-        
+          
+        - name: Configure AWS credentials from OIDC
+          uses: aws-actions/configure-aws-credentials@v4
+          with:
+            role-to-assume: ${{ env.AWS_ROLE }}
+            aws-region: us-east-2
+
+        - name: Determine S3 Bucket
+          id: bucket
+          run: |
+            if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+              echo "bucket_name=${{ secrets.S3_BUCKET_PROD }}" >> $GITHUB_OUTPUT
+            elif [ "${{ github.ref }}" == "refs/heads/develop" ]; then
+              echo "bucket_name=${{ secrets.S3_BUCKET_DEV }}" >> $GITHUB_OUTPUT
+            fi
+
+        - name: Deploy to S3
+          run: |
+            aws s3 sync ./build/ s3://${{ steps.bucket.outputs.bucket_name }} --delete
