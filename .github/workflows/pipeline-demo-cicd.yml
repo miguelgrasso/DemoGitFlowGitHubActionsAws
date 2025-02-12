@@ -47,4 +47,4 @@
 
         - name: Deploy to S3
           run: |
-            aws s3 sync ./build/ s3://${{ steps.bucket.outputs.bucket_name }} --delete
+            aws s3 sync ./.next/ s3://${{ steps.bucket.outputs.bucket_name }} --delete
